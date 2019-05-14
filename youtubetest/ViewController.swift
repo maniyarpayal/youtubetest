@@ -2,13 +2,14 @@
 import GoogleAPIClientForREST
 import GoogleSignIn
 import UIKit
+import GTMSessionFetcher // Allows to access GTLRYouTubeService.authorizer().
 import MobileCoreServices
 
 
 class ViewController: UIViewController, GIDSignInDelegate, GIDSignInUIDelegate, UIImagePickerControllerDelegate,UINavigationControllerDelegate {
     private let scopes = [kGTLRAuthScopeYouTube,kGTLRAuthScopeYouTubeForceSsl, kGTLRAuthScopeYouTubeUpload,kGTLRAuthScopeYouTubeYoutubepartner]
     
-    let service : GTLRYouTubeService = GTLRYouTubeService()
+    let service: GTLRYouTubeService = YouTubeServiceSingleton.sharedInstance()
     let signInButton = GIDSignInButton()
     let output = UITextView()
     
@@ -78,7 +79,7 @@ class ViewController: UIViewController, GIDSignInDelegate, GIDSignInUIDelegate, 
         imagePicker.delegate = self
         imagePicker.sourceType = .photoLibrary
         imagePicker.allowsEditing = true
-        imagePicker.mediaTypes = [kUTTypeMovie as! String]
+        imagePicker.mediaTypes = [kUTTypeMovie as String]
         self.present(imagePicker, animated: true) {
                     }
     }
@@ -112,11 +113,11 @@ class ViewController: UIViewController, GIDSignInDelegate, GIDSignInUIDelegate, 
         let snippet = GTLRYouTube_VideoSnippet()
         snippet.title = "\(uploadTitleField)"
         let desc = "This is demo of upload video on Youtube"
-        if (desc.count ?? 0) > 0 {
+        if desc.count > 0 {
             snippet.descriptionProperty = desc
         }
         let tagsStr = ""
-        if (tagsStr.count ?? 0) > 0 {
+        if tagsStr.count > 0 {
             snippet.tags = tagsStr.components(separatedBy: ",")
         }
 
@@ -138,7 +139,6 @@ class ViewController: UIViewController, GIDSignInDelegate, GIDSignInUIDelegate, 
     }
     func uploadVideo(withVideoObject video: GTLRYouTube_Video, resumeUploadLocationURL locationURL: URL?) {
         let fileToUploadURL = URL(fileURLWithPath: "\(uploadPathField)")
-        var fileError: Error?
         if !(try! fileToUploadURL.checkPromisedItemIsReachable()) {
             return
         }
@@ -160,7 +160,19 @@ print ("total bytes = \(Double(dataLength))")
         self.progressbar.progress = Float(Double(numberOfBytesRead)/Double(dataLength))
                     }
       
-        uploadFileTicket = service.executeQuery(query,
+        uploadFileTicket = self.fetchChannelResource()
+    }
+
+    ///
+    // List up to 10 files in Drive
+    ///
+    func fetchChannelResource() -> GTLRServiceTicket {
+        let query = GTLRYouTubeQuery_ChannelsList.query( withPart: "snippet,statistics" )
+        query.identifier = "UC_x5XG1OV2P6uZZ5FSM9Ttw"
+        // To retrieve data for the current user's channel, comment out the previous
+        // line (query.identifier ...) and uncomment the next line (query.mine ...)
+        // query.mine = true
+        return service.executeQuery( query,
                              delegate: self,
                              didFinish: #selector(displayResultWithTicket(ticket:finishedWithObject:error:)))
 
@@ -191,11 +203,11 @@ print ("total bytes = \(Double(dataLength))")
         let alert = UIAlertController(
             title: title,
             message: message,
-            preferredStyle: UIAlertControllerStyle.alert
+                preferredStyle: UIAlertController.Style.alert
         )
         let ok = UIAlertAction(
             title: "OK",
-            style: UIAlertActionStyle.default,
+                style: UIAlertAction.Style.default,
             handler: nil
         )
         alert.addAction(ok)
@@ -203,9 +215,8 @@ print ("total bytes = \(Double(dataLength))")
     }
         
 //        MARK:- Image picker delegate methods
-        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any])
-        {
-            self.uploadPathField = (info[UIImagePickerControllerMediaURL] as! URL).path
+    func imagePickerController( _ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any] ) {
+        self.uploadPathField = ( info[UIImagePickerController.InfoKey.mediaURL] as! URL ).path
             self.dismiss(animated: true) {
                 self.displayProgressBarWithProgress(0, sender: self)
                  self.uploadVideoFile()
@@ -214,18 +225,25 @@ print ("total bytes = \(Double(dataLength))")
            
         }
     //        MARK:- Hide Show progressbar methhods
-    func displayProgressBarWithProgress(_ progres:Float,sender:UIViewController) -> (UIProgressView) {
+    func displayProgressBarWithProgress( _ progress: Float, sender: UIViewController ) {
         //create an alert controller
-        let alertController = UIAlertController(title: "Processing...", message: "\n"+"Please stay in this screen...", preferredStyle: UIAlertControllerStyle.alert)
+        let alertController = UIAlertController( title: "Processing...", message: "\n" + "Please stay in this screen...", preferredStyle: UIAlertController.Style.alert )
         
         self.progressbar = UIProgressView.init(progressViewStyle: .default)
         self.progressbar.center = CGPoint(x: 135.0, y: 100)
-        let height:NSLayoutConstraint = NSLayoutConstraint(item: alertController.view, attribute: NSLayoutAttribute.height, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1, constant: 150)
+        let height: NSLayoutConstraint = NSLayoutConstraint( item: alertController.view,
+                attribute: NSLayoutConstraint.Attribute.height, relatedBy: NSLayoutConstraint.Relation.equal,
+                toItem: nil, attribute: NSLayoutConstraint.Attribute.notAnAttribute, multiplier: 1, constant: 150 )
+
         alertController.view.addConstraint(height);
-        self.progressbar.progress = progres
+        self.progressbar.progress = progress
         self.progressbar.tintColor =  UIColor.init(red: 2/255.0, green: 133/255.0, blue: 198/255.0, alpha: 1.0)
         alertController.view.addSubview(self.progressbar)
         sender.present(alertController, animated: false, completion: nil)
+    }
+
+    func displayProgressBarWithProgressAndReturn( _ progress: Float, sender: UIViewController ) -> ( UIProgressView ) {
+        self.displayProgressBarWithProgress( progress, sender: sender )
         return self.progressbar;
     }
     
