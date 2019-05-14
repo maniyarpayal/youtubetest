@@ -203,9 +203,8 @@ print ("total bytes = \(Double(dataLength))")
     }
         
 //        MARK:- Image picker delegate methods
-        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any])
-        {
-            self.uploadPathField = (info[UIImagePickerControllerMediaURL] as! URL).path
+    func imagePickerController( _ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any] ) {
+        self.uploadPathField = ( info[UIImagePickerController.InfoKey.mediaURL] as! URL ).path
             self.dismiss(animated: true) {
                 self.displayProgressBarWithProgress(0, sender: self)
                  self.uploadVideoFile()
