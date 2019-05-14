@@ -2,6 +2,7 @@
 import GoogleAPIClientForREST
 import GoogleSignIn
 import UIKit
+import GTMSessionFetcher // Allows to access GTLRYouTubeService.authorizer().
 import MobileCoreServices
 
 
