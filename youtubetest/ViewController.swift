@@ -8,7 +8,7 @@ import MobileCoreServices
 class ViewController: UIViewController, GIDSignInDelegate, GIDSignInUIDelegate, UIImagePickerControllerDelegate,UINavigationControllerDelegate {
     private let scopes = [kGTLRAuthScopeYouTube,kGTLRAuthScopeYouTubeForceSsl, kGTLRAuthScopeYouTubeUpload,kGTLRAuthScopeYouTubeYoutubepartner]
     
-    let service : GTLRYouTubeService = GTLRYouTubeService()
+    let service: GTLRYouTubeService = YouTubeServiceSingleton.sharedInstance()
     let signInButton = GIDSignInButton()
     let output = UITextView()
     
