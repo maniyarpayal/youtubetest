@@ -215,11 +215,14 @@ print ("total bytes = \(Double(dataLength))")
     //        MARK:- Hide Show progressbar methhods
     func displayProgressBarWithProgress(_ progres:Float,sender:UIViewController) -> (UIProgressView) {
         //create an alert controller
-        let alertController = UIAlertController(title: "Processing...", message: "\n"+"Please stay in this screen...", preferredStyle: UIAlertControllerStyle.alert)
+        let alertController = UIAlertController( title: "Processing...", message: "\n" + "Please stay in this screen...", preferredStyle: UIAlertController.Style.alert )
         
         self.progressbar = UIProgressView.init(progressViewStyle: .default)
         self.progressbar.center = CGPoint(x: 135.0, y: 100)
-        let height:NSLayoutConstraint = NSLayoutConstraint(item: alertController.view, attribute: NSLayoutAttribute.height, relatedBy: NSLayoutRelation.equal, toItem: nil, attribute: NSLayoutAttribute.notAnAttribute, multiplier: 1, constant: 150)
+        let height: NSLayoutConstraint = NSLayoutConstraint( item: alertController.view,
+                attribute: NSLayoutConstraint.Attribute.height, relatedBy: NSLayoutConstraint.Relation.equal,
+                toItem: nil, attribute: NSLayoutConstraint.Attribute.notAnAttribute, multiplier: 1, constant: 150 )
+
         alertController.view.addConstraint(height);
         self.progressbar.progress = progres
         self.progressbar.tintColor =  UIColor.init(red: 2/255.0, green: 133/255.0, blue: 198/255.0, alpha: 1.0)
